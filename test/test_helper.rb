@@ -1,7 +1,10 @@
 # frozen_string_literal: true
-require 'rake'
-require 'minitest/autorun'
+# Coverage must start before application code is loaded.
+require 'simplecov'
+
 require 'active_record/railtie'
+require 'minitest/autorun'
+require 'rake'
 
 # Configure Rails Environment
 ENV['RAILS_ENV'] = 'test'
