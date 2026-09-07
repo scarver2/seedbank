@@ -29,12 +29,9 @@ describe 'Seedbank standalone integration' do
       RUBY
       library = File.expand_path('../../../lib', __dir__)
 
-      environment = {
-        'BUNDLE_GEMFILE' => nil,
-        'RUBYLIB' => nil,
-        'RUBYOPT' => nil
-      }
-      output, error, status = Open3.capture3(environment, RbConfig.ruby, "-I#{library}", '-e', script, root)
+      output, error, status = Bundler.with_unbundled_env do
+        Open3.capture3(RbConfig.ruby, "-I#{library}", '-e', script, root)
+      end
 
       assert status.success?, error
       _(output.lines.map(&:strip)).must_equal %w[true true]
