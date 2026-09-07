@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 # Coverage must start before application code is loaded.
 require 'simplecov'
+SimpleCov.start
 
 require 'active_record/railtie'
 require 'minitest/autorun'

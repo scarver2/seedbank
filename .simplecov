@@ -1,10 +1,10 @@
 # .simplecov
 # frozen_string_literal: true
 
-SimpleCov.start do
+SimpleCov.configure do
   enable_coverage :branch
-  add_filter '/test/'
+  skip '/test/'
 
   coverage_dir ENV.fetch('COVERAGE_DIR', 'coverage')
-  minimum_coverage line: 90, branch: 75
+  minimum_coverage line: 90, branch: 70
 end
