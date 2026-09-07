@@ -30,9 +30,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'rake', '>= 10.0'
 
-  # Modern CI runners require Bundler 2.x; keep the historical minimum without
-  # constraining contributors to the obsolete Bundler 1.x release line.
-  spec.add_development_dependency 'bundler',  '>= 1.11'
+  spec.add_development_dependency 'bundler',  '~> 1.11'
   spec.add_development_dependency 'rails',    '~> 4.2'
   spec.add_development_dependency 'minitest', '~> 5.0'
 end

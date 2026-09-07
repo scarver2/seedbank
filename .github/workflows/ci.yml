@@ -11,6 +11,8 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      BUNDLE_GEMFILE: gemfiles/ci.gemfile
 
     steps:
       - name: Check out repository
