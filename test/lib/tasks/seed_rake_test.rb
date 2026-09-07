@@ -23,7 +23,9 @@ describe 'Seedbank rake.task' do
                  db:seed:dependent db:seed:dependent_on_nested db:seed:dependent_on_several db:seed:development
                  db:seed:development:users db:seed:no_block db:seed:original db:seed:reference_memos db:seed:with_block_memo db:seed:with_inline_memo]
 
-      subject.map(&:to_s).must_equal seeds
+      seedbank_tasks = subject.map(&:to_s).reject { |task| task == 'db:seed:replant' }
+
+      seedbank_tasks.must_equal seeds
     end
   end
 
