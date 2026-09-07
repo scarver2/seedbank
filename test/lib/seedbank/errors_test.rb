@@ -47,7 +47,7 @@ describe 'Seedbank diagnostics' do
   end
 
   it 'preserves syntax errors as the cause' do
-    error = assert_raises(Seedbank::EvaluationError) { evaluate('invalid syntax here') }
+    error = assert_raises(Seedbank::EvaluationError) { evaluate('def broken(') }
 
     _(error.cause).must_be_instance_of SyntaxError
   end
