@@ -14,7 +14,11 @@ The reason behind Seedbank is laziness. When I checkout or re-visit a project I 
 
     rake db:setup  # Create the database, load the schema, and initialize with the seed data (use db:reset to also drop the db first)
 
-To achieve this slothful aim, Seedbank renames the original db:seed rake task to db:seed:original, makes it a dependency for all the Seedbank seeds and adds a new db:seed task that loads all the common seeds in db/seeds plus all the seeds for the current Rails environment.
+To achieve this slothful aim, Seedbank adds focused tasks for the original,
+common, and environment seed files. On supported Rails versions, Seedbank plugs
+those tasks into Rails' native database seed loader. This keeps `db:seed`,
+`db:setup`, and `db:prepare` under Rails' database task lifecycle while
+preserving Seedbank's generated tasks and execution order.
 
 Although originally built for Rails, Seedbank can work stand alone thanks to Aleksey Ivanov.
 
