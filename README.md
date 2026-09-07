@@ -188,6 +188,14 @@ end
 
 Contributors
 ============
+
+Coverage
+========
+
+The test suite writes an HTML coverage report to `coverage/index.html` and
+enforces the project's line and branch coverage baselines. CI retains the
+report from every supported Ruby/Rails job as a downloadable artifact.
+
 ```shell
 git log | grep Author | sort | uniq
 ```
