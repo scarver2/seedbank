@@ -24,4 +24,15 @@ describe Seedbank::SeedLoader do
 
     _(events).must_equal %i[common]
   end
+
+  it 'uses the current Rails environment by default' do
+    events = []
+    Rake.application = Rake::Application.new
+    Rake::Task.define_task('db:seed:common') { events << :common }
+    Rake::Task.define_task('db:seed:development') { events << :development }
+
+    Rails.stub(:env, 'development') { Seedbank::SeedLoader.new.load_seed }
+
+    _(events).must_equal %i[common development]
+  end
 end

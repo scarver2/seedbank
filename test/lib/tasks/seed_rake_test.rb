@@ -147,11 +147,19 @@ describe 'Seedbank rake.task' do
     subject { Rake::Task['db:seed'] }
 
     it 'preserves the native Rails task' do
-      _(subject.prerequisites).must_equal %w[db:load_config]
+      _(subject.prerequisites).must_equal %w[load_config]
     end
 
     it 'uses Seedbank through Rails seed loader' do
       _(ActiveRecord::Tasks::DatabaseTasks.seed_loader).must_be_instance_of Seedbank::SeedLoader
+    end
+
+    it 'defines an orchestration task when a native task is unavailable' do
+      Rake.application = Rake::Application.new
+
+      load File.expand_path('../../../lib/tasks/seed.rake', __dir__)
+
+      _(Rake::Task['db:seed'].prerequisites).must_include 'db:seed:common'
     end
   end
 end
