@@ -54,6 +54,9 @@ will load the seeds in `db/seeds.rb`, `db/seeds/bar.seeds.rb` and `db/seeds/foo.
 Installation
 ============
 
+Seedbank supports maintained Ruby releases: Ruby 3.3, 3.4, and 4.0. Ruby 3.2
+and older are no longer supported as of the next Seedbank release.
+
 Seedbank > 0.5.0 uses refinements and no longer supports rubies below 2.x. If you are using an older Ruby you'll have to stick with 0.4.0 and below.
 
 I have also dropped support for Rubinius and JRuby. I'm happy to accept pull requests for them, but don't have the time to hack together the test environment. If you want to contribute, please ensure that he travis.yml is in line as it's the only way I will test these two environments.
