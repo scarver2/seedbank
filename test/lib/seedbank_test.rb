@@ -4,19 +4,20 @@
 require 'test_helper'
 
 describe Seedbank do
-  CONFIGURATION_VARIABLES = %i[@application_root @matcher @nesting @seeds_root].freeze
-  private_constant :CONFIGURATION_VARIABLES
-
   before do
-    @configuration = CONFIGURATION_VARIABLES.to_h do |variable|
+    @configuration = configuration_variables.to_h do |variable|
       [variable, Seedbank.instance_variable_get(variable)]
     end
-    CONFIGURATION_VARIABLES.each { |variable| Seedbank.remove_instance_variable(variable) if Seedbank.instance_variable_defined?(variable) }
+    configuration_variables.each { |variable| Seedbank.remove_instance_variable(variable) if Seedbank.instance_variable_defined?(variable) }
   end
 
   after do
-    CONFIGURATION_VARIABLES.each { |variable| Seedbank.remove_instance_variable(variable) if Seedbank.instance_variable_defined?(variable) }
+    configuration_variables.each { |variable| Seedbank.remove_instance_variable(variable) if Seedbank.instance_variable_defined?(variable) }
     @configuration.each { |variable, value| Seedbank.instance_variable_set(variable, value) }
+  end
+
+  def configuration_variables
+    %i[@application_root @matcher @nesting @seeds_root]
   end
 
   it 'provides conventional defaults' do
