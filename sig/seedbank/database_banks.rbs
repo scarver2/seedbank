@@ -1,0 +1,9 @@
+# sig/seedbank/database_banks.rbs
+module Seedbank
+  class DatabaseBanks
+    def initialize: (?seeds_root: String | Pathname, ?environment: ^() -> String, ?connection_class: untyped) -> void
+    def names: () -> Array[String]
+    def validate!: () -> Array[String]
+    def with: [T] (String name) { () -> T } -> T
+  end
+end

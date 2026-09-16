@@ -1,7 +1,7 @@
 # sig/seedbank/runner.rbs
 module Seedbank
   class Runner
-    def initialize: () -> void
+    def initialize: (?database_banks: DatabaseBanks) -> void
     def after: (*untyped dependencies) { () -> untyped } -> void
              | (*untyped dependencies) -> void
     def let: (String | Symbol name) { () -> untyped } -> Symbol

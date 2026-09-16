@@ -36,6 +36,40 @@ describe Seedbank::SeedLoader do
     _(events).must_equal %i[common development]
   end
 
+  it 'validates every declared database bank before running any seeds' do
+    database_banks = Object.new
+    database_banks.define_singleton_method(:validate!) do
+      raise Seedbank::ConfigurationError, 'missing warehouse'
+    end
+    events = []
+    Rake.application = Rake::Application.new
+    Rake::Task.define_task('db:seed:common') { events << :common }
+
+    error = assert_raises(Seedbank::ConfigurationError) do
+      Seedbank::SeedLoader.new(database_banks: database_banks).load_seed
+    end
+
+    _(error.message).must_equal 'missing warehouse'
+    _(events).must_be_empty
+  end
+
+  it 'loads declared database banks after common and environment seeds' do
+    events = []
+    database_banks = Object.new
+    database_banks.define_singleton_method(:validate!) { events << :validated }
+    Rake.application = Rake::Application.new
+    Rake::Task.define_task('db:seed:common') { events << :common }
+    Rake::Task.define_task('db:seed:test') { events << :environment }
+    Rake::Task.define_task('db:seed:databases') { events << :databases }
+
+    Seedbank::SeedLoader.new(
+      environment: -> { 'test' },
+      database_banks: database_banks
+    ).load_seed
+
+    _(events).must_equal %i[validated common environment databases]
+  end
+
   it 'runs the global seed graph on the Rails primary database' do
     configurations = {
       'test' => {

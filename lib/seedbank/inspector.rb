@@ -15,7 +15,11 @@ module Seedbank
 
     def list
       grouped_seeds.map do |scope, seeds|
-        heading = scope == :common ? 'Common seeds' : "Environment: #{scope}"
+        heading = case scope
+                  when :common then 'Common seeds'
+                  when Array then "Database: #{scope.last}"
+                  else "Environment: #{scope}"
+                  end
         ([heading] + seeds.map { |seed| "  #{seed.task_name}  #{relative_file(seed.file)}" }).join("\n")
       end.join("\n\n")
     end
@@ -30,7 +34,7 @@ module Seedbank
     private
 
     def seeds
-      @seeds ||= original_seed + common_seeds + environment_seeds
+      @seeds ||= original_seed + common_seeds + environment_seeds + database_seeds
     end
 
     def original_seed
@@ -49,8 +53,19 @@ module Seedbank
     def environment_seeds
       glob(@seeds_root.join('*/')).flat_map do |directory|
         scope = directory.basename.to_s
+        next [] if scope == 'databases'
+
         glob(directory.join(Seedbank.matcher)).map do |file|
           build_seed(file, scope, task_name(file))
+        end
+      end
+    end
+
+    def database_seeds
+      glob(@seeds_root.join('databases/*/')).flat_map do |directory|
+        database = directory.basename.to_s
+        glob(directory.join(Seedbank.matcher)).map do |file|
+          build_seed(file, [:database, database], task_name(file))
         end
       end
     end

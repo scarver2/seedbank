@@ -1,4 +1,9 @@
+# test/lib/tasks/seed_rake_test.rb
 # frozen_string_literal: true
+
+require 'fileutils'
+require 'tmpdir'
+
 require 'test_helper'
 using Seedbank::DSL
 
@@ -19,7 +24,7 @@ describe 'Seedbank rake.task' do
     subject { Rake.application.tasks_in_scope(defined?(Rake::Scope) ? Rake::Scope.new('db:seed') : %w[db seed]) }
 
     it 'creates all the seed tasks' do
-      seeds = %w[db:seed:circular1 db:seed:circular2 db:seed:common db:seed:dependency db:seed:dependency2
+      seeds = %w[db:seed:circular1 db:seed:circular2 db:seed:common db:seed:databases db:seed:dependency db:seed:dependency2
                  db:seed:dependent db:seed:dependent_on_nested db:seed:dependent_on_several db:seed:development
                  db:seed:development:users db:seed:no_block db:seed:original db:seed:reference_memos db:seed:with_block_memo db:seed:with_inline_memo]
 
@@ -160,6 +165,33 @@ describe 'Seedbank rake.task' do
       load File.expand_path('../../../lib/tasks/seed.rake', __dir__)
 
       _(Rake::Task['db:seed'].prerequisites).must_include 'db:seed:common'
+    end
+  end
+
+  describe 'declared database banks' do
+    it 'creates deterministic aggregate tasks without treating databases as an environment' do
+      Dir.mktmpdir do |directory|
+        previous_seeds_root = Seedbank.seeds_root
+        seeds_root = Pathname.new(directory).join('db/seeds')
+        FileUtils.mkdir_p(seeds_root.join('databases/warehouse'))
+        FileUtils.mkdir_p(seeds_root.join('databases/archive'))
+        seeds_root.join('databases/warehouse/dimensions.seeds.rb').write('')
+        seeds_root.join('databases/archive/retention.seeds.rb').write('')
+        Seedbank.seeds_root = seeds_root
+        Rake.application = Rake::Application.new
+
+        load File.expand_path('../../../lib/tasks/seed.rake', __dir__)
+
+        _(Rake::Task['db:seed:databases'].prerequisites).must_equal(
+          %w[db:seed:databases:archive db:seed:databases:warehouse]
+        )
+        _(Rake::Task['db:seed:databases:warehouse'].prerequisites).must_equal(
+          %w[db:seed:databases:warehouse:dimensions]
+        )
+        _(Rake::Task.task_defined?('db:seed:databases:archive:retention')).must_equal true
+      ensure
+        Seedbank.seeds_root = previous_seeds_root
+      end
     end
   end
 end

@@ -3,7 +3,8 @@
 
 module Seedbank
   class Runner
-    def initialize
+    def initialize(database_banks: Seedbank::DatabaseBanks.new)
+      @database_banks = database_banks
       @_memoized = {}
       @_seed_stack = []
     end
@@ -67,6 +68,15 @@ module Seedbank
     end
 
     def evaluate(seed_task, seed_file)
+      database = database_name(seed_task.name)
+      return @database_banks.with(database) { evaluate_file(seed_task, seed_file) } if database
+
+      evaluate_file(seed_task, seed_file)
+    end
+
+    private
+
+    def evaluate_file(seed_task, seed_file)
       previous_seed_task = @_seed_task
       previous_seed_file = @_seed_file
       @_seed_task = seed_task
@@ -83,7 +93,9 @@ module Seedbank
       @_seed_file = previous_seed_file
     end
 
-    private
+    def database_name(task_name)
+      task_name.match(/\Adb:seed:databases:([^:]+):/)&.captures&.first
+    end
 
     def dependency_task_name(dependency)
       unless dependency.is_a?(String) || dependency.is_a?(Symbol)
