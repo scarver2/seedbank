@@ -203,8 +203,3 @@ BUNDLE_GEMFILE=gemfiles/rails_8_1.gemfile bundle exec rake test
 Copyright
 =========
 Copyright (c) 2011-2017 James McCarthy, released under the MIT license
-
-—
-Stan Carver II
-Made in Texas 🤠
-https://stancarver.com
