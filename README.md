@@ -15,7 +15,11 @@ The reason behind Seedbank is laziness. When I checkout or re-visit a project I 
 
     rake db:setup  # Create the database, load the schema, and initialize with the seed data (use db:reset to also drop the db first)
 
-To achieve this slothful aim, Seedbank renames the original db:seed rake task to db:seed:original, makes it a dependency for all the Seedbank seeds and adds a new db:seed task that loads all the common seeds in db/seeds plus all the seeds for the current Rails environment.
+To achieve this slothful aim, Seedbank adds focused tasks for the original,
+common, and environment seed files. On supported Rails versions, Seedbank plugs
+those tasks into Rails' native database seed loader. This keeps `db:seed`,
+`db:setup`, and `db:prepare` under Rails' database task lifecycle while
+preserving Seedbank's generated tasks and execution order.
 
 Although originally built for Rails, Seedbank can work stand alone thanks to Aleksey Ivanov.
 
@@ -54,6 +58,12 @@ will load the seeds in `db/seeds.rb`, `db/seeds/bar.seeds.rb` and `db/seeds/foo.
 
 Installation
 ============
+
+Seedbank supports maintained Ruby releases: Ruby 3.3, 3.4, and 4.0. Ruby 3.2
+and older are no longer supported as of the next Seedbank release.
+
+Seedbank supports Rails 8.0 and 8.1. Rails 7.2 and older are no longer
+supported as of the next Seedbank release.
 
 Seedbank > 0.5.0 uses refinements and no longer supports rubies below 2.x. If you are using an older Ruby you'll have to stick with 0.4.0 and below.
 
@@ -154,6 +164,15 @@ end
 
 *Note* - If you experience any errors like `Don't know how to build task 'db:seed:users'`. Ensure you are specifying `after 'development:companies'` like the above example. This is the usual culprit (YMMV).
 
+When a dependency is missing or malformed, Seedbank reports the seed task,
+source file, and dependency name. Errors raised by application seed code retain
+their original exception as the cause, so normal Ruby backtraces and CI failure
+reporting remain available. A common seed cannot use the same task name as an
+environment directory because that would make `db:seed:NAME` ambiguous.
+Circular dependencies are rejected before any seed body in the cycle runs, and
+the error reports the complete path (for example, `db:seed:users ->
+db:seed:accounts -> db:seed:users`).
+
 ### Defining and using methods
 
 As seed files are evaluated within a single runner in dependency order, any methods defined earlier in the run will be available across dependent tasks. I
@@ -204,6 +223,14 @@ excluded from the package.
 
 Contributors
 ============
+
+Coverage
+========
+
+The test suite writes an HTML coverage report to `coverage/index.html` and
+enforces the project's line and branch coverage baselines. CI retains the
+report from every supported Ruby/Rails job as a downloadable artifact.
+
 ```shell
 git log | grep Author | sort | uniq
 ```
