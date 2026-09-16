@@ -37,64 +37,74 @@ describe Seedbank::SeedLoader do
   end
 
   it 'runs the global seed graph on the Rails primary database' do
-    with_database_configurations(
+    configurations = {
       'test' => {
         'primary' => { 'adapter' => 'sqlite3', 'database' => ':memory:' },
         'animals' => { 'adapter' => 'sqlite3', 'database' => ':memory:' }
       }
-    ) do
-      ActiveRecord::Base.establish_connection(:animals)
-      connections = []
-      Rake.application = Rake::Application.new
-      Rake::Task.define_task('db:seed:common') do
-        connections << ActiveRecord::Base.connection_db_config.name
-      end
-
-      Seedbank::SeedLoader.new(environment: -> { 'test' }).load_seed
-
-      _(connections).must_equal %w[primary]
-      _(ActiveRecord::Base.connection_db_config.name).must_equal 'primary'
+    }
+    connection_class = connection_class_for(configurations, current: 'animals')
+    connections = []
+    Rake.application = Rake::Application.new
+    Rake::Task.define_task('db:seed:common') do
+      connections << connection_class.connection_db_config.name
     end
+
+    Seedbank::SeedLoader.new(environment: -> { 'test' }, connection_class: connection_class).load_seed
+
+    _(connections).must_equal %w[primary]
+    _(connection_class.connection_db_config.name).must_equal 'primary'
   end
 
   it 'does not reconnect single-database applications' do
-    with_database_configurations(
-      'test' => { 'adapter' => 'sqlite3', 'database' => ':memory:' }
-    ) do
-      ActiveRecord::Base.establish_connection(:test)
-      original_pool = ActiveRecord::Base.connection_pool
-      Rake.application = Rake::Application.new
-      Rake::Task.define_task('db:seed:common')
+    connection_class = connection_class_for(
+      { 'test' => { 'adapter' => 'sqlite3', 'database' => ':memory:' } },
+      current: 'primary'
+    )
+    Rake.application = Rake::Application.new
+    Rake::Task.define_task('db:seed:common')
 
-      Seedbank::SeedLoader.new(environment: -> { 'test' }).load_seed
+    Seedbank::SeedLoader.new(environment: -> { 'test' }, connection_class: connection_class).load_seed
 
-      _(ActiveRecord::Base.connection_pool).must_be_same_as original_pool
-    end
+    _(connection_class.established_connections).must_be_empty
   end
 
   it 'rejects ambiguous multiple-database configurations without a primary' do
-    with_database_configurations(
+    configurations = {
       'test' => {
         'animals' => { 'adapter' => 'sqlite3', 'database' => ':memory:' },
         'queue' => { 'adapter' => 'sqlite3', 'database' => ':memory:' }
       }
-    ) do
-      error = assert_raises(Seedbank::ConfigurationError) do
-        Seedbank::SeedLoader.new(environment: -> { 'test' }).load_seed
-      end
-
-      _(error.message).must_include('no primary database exists')
+    }
+    connection_class = connection_class_for(configurations, current: 'animals')
+    error = assert_raises(Seedbank::ConfigurationError) do
+      Seedbank::SeedLoader.new(environment: -> { 'test' }, connection_class: connection_class).load_seed
     end
+
+    _(error.message).must_include('no primary database exists')
   end
 
-  def with_database_configurations(configurations)
-    original_configurations = ActiveRecord::Base.configurations
-    original_connection = ActiveRecord::Base.connection_db_config
-    ActiveRecord::Base.configurations = configurations
+  def connection_class_for(configurations, current:)
+    database_configurations = ActiveRecord::DatabaseConfigurations.new(configurations)
+    current_configuration = database_configurations.configs_for(env_name: 'test', name: current)
 
-    yield
-  ensure
-    ActiveRecord::Base.configurations = original_configurations
-    ActiveRecord::Base.establish_connection(original_connection)
+    Class.new do
+      attr_reader :configurations, :established_connections
+
+      def initialize(configurations, current_configuration)
+        @configurations = configurations
+        @current_configuration = current_configuration
+        @established_connections = []
+      end
+
+      def connection_db_config
+        @current_configuration
+      end
+
+      def establish_connection(configuration)
+        @current_configuration = configuration
+        @established_connections << configuration
+      end
+    end.new(database_configurations, current_configuration)
   end
 end
