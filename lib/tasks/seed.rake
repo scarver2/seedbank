@@ -1,3 +1,4 @@
+# lib/tasks/seed.rake
 # frozen_string_literal: true
 namespace :db do
   using Seedbank::DSL
@@ -19,7 +20,7 @@ namespace :db do
 
     # Glob through the directories under seeds_path and create a task for each adding it to the dependency list.
     # Then create a task for the environment
-    glob_seed_files_matching('/*/').each do |directory|
+    glob_seed_files_matching('/*/').reject { |directory| File.basename(directory) == 'databases' }.each do |directory|
       environment = File.basename(directory)
       environment_task = "db:seed:#{environment}"
 
@@ -35,6 +36,23 @@ namespace :db do
 
       seed_dependencies << environment_task if defined?(Rails) && Rails.env == environment
     end
+
+    database_banks = glob_seed_files_matching('databases/*/').sort.to_h do |directory|
+      database = File.basename(directory)
+      [database, seed_tasks_matching('databases', database, Seedbank.matcher)]
+    end
+
+    database_dependencies = []
+    namespace :databases do
+      database_banks.each do |database, dependencies|
+        desc "Load the declared seed bank for the Rails #{database} database configuration."
+        task database => dependencies
+        database_dependencies << "db:seed:databases:#{database}"
+      end
+    end
+
+    desc 'Load every declared database seed bank.'
+    task databases: database_dependencies
   end
 
   # Rails delegates its native db:seed task to Seedbank::SeedLoader. Standalone

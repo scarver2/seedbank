@@ -56,12 +56,22 @@ describe Seedbank::Inspector do
     end
   end
 
+  it 'lists database banks separately from environment seeds' do
+    with_seed('databases/warehouse/dimensions.seeds.rb', "raise 'not executed'\n") do |custom_inspector|
+      output = custom_inspector.list
+
+      _(output).must_include "Database: warehouse\n  db:seed:databases:warehouse:dimensions"
+      _(output).wont_include 'Environment: databases'
+    end
+  end
+
   def with_seed(filename, contents)
     Dir.mktmpdir do |directory|
       application_root = Pathname.new(directory)
       seeds_root = application_root.join('db/seeds')
-      FileUtils.mkdir_p(seeds_root)
-      seeds_root.join(filename).write(contents)
+      seed_file = seeds_root.join(filename)
+      FileUtils.mkdir_p(seed_file.dirname)
+      seed_file.write(contents)
 
       yield Seedbank::Inspector.new(seeds_root: seeds_root, application_root: application_root)
     end

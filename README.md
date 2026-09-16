@@ -192,6 +192,54 @@ class Animal < AnimalsRecord
 end
 ```
 
+When an entire group of ordinary Active Record models should target a named
+Rails database configuration, declare a database bank with this filesystem
+layout:
+
+```text
+db/seeds/
+  databases/
+    primary/
+      roles.seeds.rb
+    warehouse/
+      dimensions.seeds.rb
+    archive/
+      retention_codes.seeds.rb
+```
+
+`bin/rails db:seed` runs common seeds, the current environment seeds, and then
+declared banks in configuration-name and filename order. Each bank temporarily
+routes `ActiveRecord::Base` through the matching Rails configuration and restores
+the preceding connection afterward. Seedbank does not parse adapter settings or
+create a separate connection registry, so the convention works with any adapter
+supported by Active Record. The integration suite exercises separate SQLite
+files; DuckDB and other adapters use the same Rails configuration boundary but
+are not installed in Seedbank's CI matrix.
+
+Dependencies may cross banks by using the complete task scope:
+
+```ruby
+# db/seeds/databases/warehouse/dimensions.seeds.rb
+after 'databases:archive:retention_codes' do
+  Dimension.find_or_create_by!(name: 'retention')
+end
+```
+
+The dependency runs on `archive`, then the dependent body resumes on
+`warehouse`. Database banks are deliberately not environments, and nested
+environment directories inside a bank are not supported. `db:seedbank:list`
+labels banks separately, while `db:seedbank:graph` shows their fully qualified
+task names without running seed bodies. A bank defines a connection context,
+not a cross-database transaction: Seedbank does not wrap separate databases in
+one transaction or attempt distributed rollback.
+
+All declared bank names are validated before any seed runs. Missing
+configurations and configurations hidden from Rails tasks with
+`database_tasks: false` fail immediately. Rails' `seeds: true` setting still
+controls whether Rails lifecycle tasks such as `db:prepare` invoke the global
+seed loader; once explicitly invoked, Seedbank runs every declared bank exactly
+once rather than once for each Rails database task.
+
 An `Animal` seed writes through the `animals` connection while ordinary models
 continue using `primary`. Rails' per-database `seeds: true` setting controls
 whether `db:prepare` invokes the global seed loader when that database is first
