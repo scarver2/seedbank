@@ -16,7 +16,7 @@ Gem::Specification.new do |spec|
   DESCRIPTION
   spec.homepage = 'https://github.com/scarver2/seedbank'
   spec.license = 'MIT'
-  spec.required_ruby_version = '>= 2.1'
+  spec.required_ruby_version = '>= 3.3'
 
   spec.metadata = {
     'bug_tracker_uri' => 'https://github.com/scarver2/seedbank/issues',
@@ -27,6 +27,7 @@ Gem::Specification.new do |spec|
   spec.files = Dir['lib/**/*', 'MIT-LICENSE', 'README.md'].select { |file| File.file?(file) }.sort
   spec.require_paths = ['lib']
 
+  spec.add_dependency 'prism', '>= 0.24'
   spec.add_dependency 'rake', '>= 10.0'
   spec.add_development_dependency 'rdoc'
 end
