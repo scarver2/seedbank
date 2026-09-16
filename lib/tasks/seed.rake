@@ -45,3 +45,17 @@ namespace :db do
     override_seed_task seed: seed_dependencies
   end
 end
+
+namespace :db do
+  namespace :seedbank do
+    desc 'List discovered Seedbank seeds without executing them'
+    task :list do
+      puts Seedbank::Inspector.new.list
+    end
+
+    desc 'Print declared Seedbank dependencies without executing seed bodies'
+    task :graph do
+      puts Seedbank::Inspector.new.graph
+    end
+  end
+end
