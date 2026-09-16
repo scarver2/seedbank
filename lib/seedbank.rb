@@ -1,6 +1,9 @@
+# lib/seedbank.rb
 # frozen_string_literal: true
+
 require 'seedbank/dsl'
 require 'seedbank/runner'
+require 'seedbank/version'
 
 module Seedbank
   class << self
