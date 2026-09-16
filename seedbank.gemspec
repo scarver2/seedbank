@@ -27,5 +27,6 @@ Gem::Specification.new do |spec|
   spec.files = Dir['lib/**/*', 'MIT-LICENSE', 'README.md'].select { |file| File.file?(file) }.sort
   spec.require_paths = ['lib']
 
+  spec.add_dependency 'prism', '>= 0.24'
   spec.add_dependency 'rake', '>= 10.0'
 end

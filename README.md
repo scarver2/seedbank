@@ -150,6 +150,18 @@ Circular dependencies are rejected before any seed body in the cycle runs, and
 the error reports the complete path (for example, `db:seed:users ->
 db:seed:accounts -> db:seed:users`).
 
+Inspect discovered seeds without running application code:
+
+```shell
+bin/rails db:seedbank:list
+bin/rails db:seedbank:graph
+```
+
+The list distinguishes common seeds from each environment. The graph reports
+literal `after` dependencies using their effective Rake task names. Dependencies
+computed by arbitrary Ruby are shown as dynamic source locations because
+Seedbank does not execute seed files during inspection.
+
 ### Defining and using methods
 
 As seed files are evaluated within a single runner in dependency order, any methods defined earlier in the run will be available across dependent tasks. I
