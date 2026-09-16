@@ -146,21 +146,20 @@ describe 'Seedbank rake.task' do
   describe 'db:seed task' do
     subject { Rake::Task['db:seed'] }
 
-    describe 'when no environment seeds are defined' do
-      it 'is dependent on db:seed:common' do
-        subject.prerequisites.must_equal %w[db:abort_if_pending_migrations db:seed:common]
-      end
+    it 'preserves the native Rails task' do
+      _(subject.prerequisites).must_equal %w[load_config]
     end
 
-    describe 'when environment seeds are defined' do
-      it 'is dependent on db:seed:common' do
-        Rails.stub(:env, 'development') do
-          Rake.application.clear
-          silence_warnings { Dummy::Application.load_tasks }
+    it 'uses Seedbank through Rails seed loader' do
+      _(ActiveRecord::Tasks::DatabaseTasks.seed_loader).must_be_instance_of Seedbank::SeedLoader
+    end
 
-          subject.prerequisites.must_equal %w[db:abort_if_pending_migrations db:seed:common db:seed:development]
-        end
-      end
+    it 'defines an orchestration task when a native task is unavailable' do
+      Rake.application = Rake::Application.new
+
+      load File.expand_path('../../../lib/tasks/seed.rake', __dir__)
+
+      _(Rake::Task['db:seed'].prerequisites).must_include 'db:seed:common'
     end
   end
 end

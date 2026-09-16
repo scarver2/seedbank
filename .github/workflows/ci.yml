@@ -44,6 +44,9 @@ jobs:
       - name: Run tests
         run: bundle exec rake test
 
+      - name: Validate RBS signatures
+        run: bundle exec rbs validate
+
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v7
