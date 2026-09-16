@@ -9,10 +9,31 @@ module Seedbank
     end
 
     def load_seed
+      environment = @environment.call
+      connect_to_primary_database(environment)
       Rake::Task['db:seed:common'].invoke
 
-      environment_task = "db:seed:#{@environment.call}"
+      environment_task = "db:seed:#{environment}"
       Rake::Task[environment_task].invoke if Rake::Task.task_defined?(environment_task)
+    end
+
+    private
+
+    def connect_to_primary_database(environment)
+      return unless defined?(ActiveRecord::Base)
+
+      configurations = ActiveRecord::Base.configurations.configs_for(env_name: environment)
+      return unless configurations.length > 1
+
+      primary = configurations.find { |configuration| configuration.name == 'primary' }
+      unless primary
+        raise ConfigurationError,
+              "Multiple databases are configured for #{environment}, but no primary database exists"
+      end
+
+      return if ActiveRecord::Base.connection_db_config == primary
+
+      ActiveRecord::Base.establish_connection(primary)
     end
   end
 end

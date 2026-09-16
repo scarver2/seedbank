@@ -156,6 +156,37 @@ As seed files are evaluated within a single runner in dependency order, any meth
 recommend keeping method definitions in the seed file that uses them. Alternatively if you have many common methods, put them into a module and extend the
 runner with the module.
 
+### Multiple databases
+
+Seedbank follows [Rails' multiple-database
+conventions](https://guides.rubyonrails.org/active_record_multiple_databases.html)
+and global seed-loader model in applications with multiple
+databases. Common and environment-specific Seedbank files form one seed graph,
+and the graph starts with `ActiveRecord::Base` connected to the Rails `primary`
+database. This prevents a preceding lifecycle task from accidentally leaving the
+global connection on a cache, queue, cable, analytics, or other secondary
+database. Single-database applications are not reconnected.
+
+Target another database explicitly through Rails model configuration, not by
+using an environment directory:
+
+```ruby
+class AnimalsRecord < ActiveRecord::Base
+  self.abstract_class = true
+  connects_to database: { writing: :animals }
+end
+
+class Animal < AnimalsRecord
+end
+```
+
+An `Animal` seed writes through the `animals` connection while ordinary models
+continue using `primary`. Rails' per-database `seeds: true` setting controls
+whether `db:prepare` invokes the global seed loader when that database is first
+initialized; it does not cause Seedbank to run every seed once per database.
+Likewise, `database_tasks: false` remains Rails' way to exclude an external
+database from schema, migration, and seed lifecycle tasks.
+
 db/seeds/support.rb
 ```ruby
 module Support
