@@ -158,6 +158,12 @@ end
 
 *Note* - If you experience any errors like `Don't know how to build task 'db:seed:users'`. Ensure you are specifying `after 'development:companies'` like the above example. This is the usual culprit (YMMV).
 
+When a dependency is missing or malformed, Seedbank reports the seed task,
+source file, and dependency name. Errors raised by application seed code retain
+their original exception as the cause, so normal Ruby backtraces and CI failure
+reporting remain available. A common seed cannot use the same task name as an
+environment directory because that would make `db:seed:NAME` ambiguous.
+
 ### Defining and using methods
 
 As seed files are evaluated within a single runner in dependency order, any methods defined earlier in the run will be available across dependent tasks. I
