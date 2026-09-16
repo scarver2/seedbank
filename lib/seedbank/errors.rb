@@ -13,6 +13,15 @@ module Seedbank
     end
   end
 
+  class DependencyCycleError < Error
+    attr_reader :cycle
+
+    def initialize(cycle:)
+      @cycle = cycle
+      super("Circular seed dependency detected: #{cycle.join(' -> ')}")
+    end
+  end
+
   class EvaluationError < Error
     attr_reader :original_error, :seed_file, :seed_task
 

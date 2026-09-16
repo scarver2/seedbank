@@ -163,6 +163,9 @@ source file, and dependency name. Errors raised by application seed code retain
 their original exception as the cause, so normal Ruby backtraces and CI failure
 reporting remain available. A common seed cannot use the same task name as an
 environment directory because that would make `db:seed:NAME` ambiguous.
+Circular dependencies are rejected before any seed body in the cycle runs, and
+the error reports the complete path (for example, `db:seed:users ->
+db:seed:accounts -> db:seed:users`).
 
 ### Defining and using methods
 
