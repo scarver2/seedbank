@@ -29,4 +29,5 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'prism', '>= 0.24'
   spec.add_dependency 'rake', '>= 10.0'
+  spec.add_development_dependency 'rdoc'
 end

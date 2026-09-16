@@ -1,9 +1,10 @@
 # gemfiles/rails_8_0.gemfile
 source 'https://rubygems.org'
 
+gemspec path: '..'
+
 gem 'minitest', '~> 5.0'
 gem 'rails', '~> 8.0.0'
 gem 'rbs', require: false
-gem 'seedbank', path: '..'
 gem 'simplecov', require: false
 gem 'sqlite3', '~> 2.1'
