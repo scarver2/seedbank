@@ -2,7 +2,10 @@
 # frozen_string_literal: true
 
 require 'seedbank/dsl'
+require 'seedbank/errors'
+require 'seedbank/inspector'
 require 'seedbank/runner'
+require 'seedbank/seed_loader'
 require 'seedbank/version'
 
 module Seedbank
