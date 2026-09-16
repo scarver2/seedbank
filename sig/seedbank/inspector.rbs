@@ -1,0 +1,8 @@
+# sig/seedbank/inspector.rbs
+module Seedbank
+  class Inspector
+    def initialize: (?seeds_root: String | Pathname, ?application_root: String | Pathname) -> void
+    def list: () -> String
+    def graph: () -> String
+  end
+end
