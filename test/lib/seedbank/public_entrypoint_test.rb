@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 require 'open3'
+require 'tmpdir'
 
 require 'test_helper'
 
@@ -17,7 +18,8 @@ describe 'Seedbank public entrypoint' do
       },
       RbConfig.ruby,
       '-I', library_path,
-      '-e', 'require "seedbank"; print Seedbank::VERSION'
+      '-e', 'require "seedbank"; print Seedbank::VERSION',
+      chdir: Dir.tmpdir
     )
 
     assert status.success?, stderr
