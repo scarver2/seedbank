@@ -9,6 +9,12 @@ describe 'Seedbank public entrypoint' do
   it 'exposes a semantic version without requiring the internal version file' do
     library_path = File.expand_path('../../../lib', __dir__)
     stdout, stderr, status = Open3.capture3(
+      {
+        'BUNDLE_BIN_PATH' => nil,
+        'BUNDLE_GEMFILE' => nil,
+        'RUBYLIB' => nil,
+        'RUBYOPT' => nil
+      },
       RbConfig.ruby,
       '-I', library_path,
       '-e', 'require "seedbank"; print Seedbank::VERSION'
